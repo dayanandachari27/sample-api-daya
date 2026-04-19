@@ -64,7 +64,7 @@ pipeline {
                     podman run -d \
                       --name ${CONTAINER_NAME} \
                       --cgroup-manager=cgroupfs \
-                      -p ${HOST_PORT}:${APP_PORT} \
+                      --network host \
                       ${IMAGE_NAME}:${IMAGE_TAG}
                 '''
             }
