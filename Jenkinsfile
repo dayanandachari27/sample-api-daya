@@ -15,7 +15,7 @@ pipeline {
         IMAGE_NAME     = 'sample-api'
         IMAGE_TAG      = "${BUILD_NUMBER}"
         CONTAINER_NAME = 'sample-api-container'
-        APP_PORT       = '3001'
+        APP_PORT       = '3000'
         HOST_PORT      = '3001'
     }
 
