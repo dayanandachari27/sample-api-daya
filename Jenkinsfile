@@ -27,7 +27,7 @@ pipeline {
             }
         }
 
-        stage('Pre-Checks') {
+        stage('Pre checks- debug ') {
             steps {
                 sh '''
                     node -v
@@ -40,7 +40,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    npm install
+                    npm ci || npm install
                 '''
             }
         }
@@ -48,24 +48,35 @@ pipeline {
         stage('Build Container Image') {
             steps {
                 sh '''
+                    echo "Building sample api Podman image..."
                     podman build \
                       --cgroup-manager=cgroupfs \
                       -t ${IMAGE_NAME}:${IMAGE_TAG} \
                       -t ${IMAGE_NAME}:latest .
+                    echo "Build completed"
+                    podman images | grep ${IMAGE_NAME}
                 '''
             }
         }
 
-        stage('Deploy Container') {
+        stage('Deploy to Podman') {
             steps {
                 sh '''
+                    set -e
+                    echo "Removing old container if exists..."
                     podman rm -f ${CONTAINER_NAME} || true
 
+                    echo "starting new container..."
                     podman run -d \
                       --name ${CONTAINER_NAME} \
+                      --label build=${BUILD_NUMBER} \
                       --cgroup-manager=cgroupfs \
                       -p ${HOST_PORT}:${APP_PORT} \
                       ${IMAGE_NAME}:${IMAGE_TAG}
+
+                    sleep 3
+                    echo "Running containers:"
+                    podman ps
                 '''
             }
         }
@@ -79,15 +90,15 @@ pipeline {
             }
         }
 
-        stage('Verification') {
-            steps {
-                sh '''
-                    podman ps
-                    podman images | grep ${IMAGE_NAME}
-                '''
-            }
-        }
-    }
+    //     stage('Verification') {
+    //         steps {
+    //             sh '''
+    //                 podman ps
+    //                 podman images | grep ${IMAGE_NAME}
+    //             '''
+    //         }
+    //     }
+    // }
 
     post {
         success {
