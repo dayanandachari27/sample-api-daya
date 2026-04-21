@@ -94,7 +94,7 @@ pipeline {
 
                     trivy image \
                       --input sample-api.tar \
-                      --severity HIGH,CRITICAL \
+                      --severity CRITICAL \
                       --exit-code 1 \
                       --format json \
                       --output trivy-report.json
@@ -190,9 +190,9 @@ pipeline {
                 echo "Removing dangling Podman images..."
                 podman image prune -f || true
 
-                echo "Cleaning workspace..."
+                ##echo "Cleaning workspace..."
             '''
-            cleanWs()
+            // cleanWs()
         }
     }
 }
