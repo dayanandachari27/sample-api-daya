@@ -83,6 +83,9 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 sh '''
+                    echo "Saving image as tar..."
+                    podman save -o sample-api.tar ${IMAGE_NAME}:${IMAGE_TAG}
+                    
                     echo "Scanning image with Trivy...."
 
                     trivy image \
