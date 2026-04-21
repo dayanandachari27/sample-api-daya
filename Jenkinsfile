@@ -148,14 +148,24 @@ pipeline {
             }
         }
 
-        stage('Health Check') {
+        stage('post-deployment verification') {
             steps {
                 sh '''
                     sleep 5
+                    curl --fail http://localhost:${HOST_PORT}
+                    curl --fail http://localhost:${HOST_PORT}/employees
                     curl --fail http://localhost:${HOST_PORT}/health
+
                 '''
             }
         }
+
+        // related to api end point not accessible due to some reason, how you will resolve it or debug
+        // how you will move this build from one env to another env, what will be your branching strategy, what will be your rollback strategy in case of failure in prod env, how you will do regression test in case of prod env deployment, these are the questions to be answered in this stage
+        // rollback strategy to be implemented in case of failure in prod env
+        // branching sstrategy to be implemented for dev, staging and prod env
+        // regression test to be implemented in case of prod env deployment
+        // version control strategy to be implemented for dev, staging and prod env
 
     //     stage('Verification') {
     //         steps {
