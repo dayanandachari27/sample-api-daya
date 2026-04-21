@@ -83,6 +83,10 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 sh '''
+                    
+                    echo "Removing old tar if exists..." 
+                    rm -f sample-api.tar
+                
                     echo "Saving image as tar..."
                     podman save -o sample-api.tar ${IMAGE_NAME}:${IMAGE_TAG}
 
