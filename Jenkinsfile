@@ -85,15 +85,15 @@ pipeline {
                 sh '''
                     echo "Saving image as tar..."
                     podman save -o sample-api.tar ${IMAGE_NAME}:${IMAGE_TAG}
-                    
+
                     echo "Scanning image with Trivy...."
 
                     trivy image \
-                    --severity HIGH,CRITICAL \
-                    --exit-code 1 \
-                    --format json \
-                    --output trivy-report.json \
-                    ${IMAGE_NAME}:${IMAGE_TAG}
+                      --input sample-api.tar \
+                      --severity HIGH,CRITICAL \
+                      --exit-code 1 \
+                      --format json \
+                      --output trivy-report.json
                 '''
             }
         }
@@ -176,6 +176,19 @@ pipeline {
 
         always {
             archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
+        }
+
+        cleanup {
+            sh '''
+                echo "Cleaning tar files..."
+                rm -f *.tar  || true
+
+                echo "Removing dangling Podman images..."
+                podman image prune -f || true
+
+                echo "Cleaning workspace..."
+            '''
+            cleanWs()
         }
     }
 }
