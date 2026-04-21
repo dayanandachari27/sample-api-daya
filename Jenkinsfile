@@ -40,10 +40,31 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    npm ci || npm install
+                    echo "Installing Node.js dependencies..."
+                    npm ci --audit=false
+                    echo "Dependencies installed"
                 '''
             }
         }
+
+        stage('Dependency Security Scan') {
+            steps { 
+                echo "Running npm audit..."
+                sh 'npm audit --audit-level=high'
+                echo "npm audit completed"
+            }
+     }
+
+        
+        stage('Test') {
+            steps {
+                echo "Executing test suite..."
+                sh 'npm test'
+                echo "Tests completed successfully"
+            }
+        }
+
+
 
         stage('Build Container Image') {
             steps {

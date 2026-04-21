@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 
 // Health Check Route
 app.get('/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     status: "UP",
     service: "sample-api",
     port: 3000
@@ -25,7 +25,7 @@ app.get('/health', (req, res) => {
 
 // Get All Employees
 app.get('/employees', (req, res) => {
-  res.json(employees);
+  res.status(200).json(employees);
 });
 
 // Get Employee By ID
@@ -33,9 +33,11 @@ app.get('/employees/:id', (req, res) => {
   const emp = employees.find(e => e.id == req.params.id);
 
   if (emp) {
-    res.json(emp);
+    res.status(200).json(emp);
   } else {
-    res.status(404).json({ message: "Employee not found" });
+    res.status(404).json({
+      message: "Employee not found"
+    });
   }
 });
 
@@ -49,6 +51,14 @@ app.post('/employees', (req, res) => {
     });
   }
 
+  const exists = employees.find(e => e.id == newEmployee.id);
+
+  if (exists) {
+    return res.status(409).json({
+      message: "Employee id already exists"
+    });
+  }
+
   employees.push(newEmployee);
 
   res.status(201).json({
@@ -57,15 +67,56 @@ app.post('/employees', (req, res) => {
   });
 });
 
-// Version Route (Good for Interview Demo)
-app.get('/version', (req, res) => {
-  res.json({
-    version: "1.0.0",
-    build: "local-dev"
+// Update Employee
+app.put('/employees/:id', (req, res) => {
+  const emp = employees.find(e => e.id == req.params.id);
+
+  if (!emp) {
+    return res.status(404).json({
+      message: "Employee not found"
+    });
+  }
+
+  emp.name = req.body.name || emp.name;
+
+  res.status(200).json({
+    message: "Employee Updated",
+    employee: emp
   });
 });
 
-// Start Server
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+// Delete Employee
+app.delete('/employees/:id', (req, res) => {
+  const index = employees.findIndex(e => e.id == req.params.id);
+
+  if (index === -1) {
+    return res.status(404).json({
+      message: "Employee not found"
+    });
+  }
+
+  const deleted = employees.splice(index, 1);
+
+  res.status(200).json({
+    message: "Employee Deleted",
+    employee: deleted[0]
+  });
 });
+
+// Version Route
+app.get('/version', (req, res) => {
+  res.status(200).json({
+    version: "1.0.0",
+    build: process.env.BUILD_NUMBER || "local-dev"
+  });
+});
+
+// Start Server only when run directly
+if (require.main === module) {
+  app.listen(3000, '0.0.0.0', () => {
+    console.log("Server running on port 3000");
+  });
+}
+
+// Export app for testing
+module.exports = app;
