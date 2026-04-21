@@ -80,6 +80,46 @@ pipeline {
             }
         }
 
+        stage('Trivy Image Scan') {
+            steps {
+                sh '''
+                    echo "Scanning image with Trivy...."
+
+                    trivy image \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    --format json \
+                    --output trivy-report.json \
+                    ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
+            }
+        }
+
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | podman login docker.io \
+                        -u "$DOCKER_USER" --password-stdin
+
+                        podman tag ${IMAGE_NAME}:${IMAGE_TAG} \
+                        docker.io/dayanand1991/sample-api-podman-image:${IMAGE_TAG}
+
+                        podman push docker.io/dayanand1991/sample-api-podman-image:${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+
+
+
         stage('Deploy to Podman') {
             steps {
                 sh '''
@@ -132,7 +172,7 @@ pipeline {
         }
 
         always {
-            sh 'podman ps -a || true'
+            archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
         }
     }
 }
