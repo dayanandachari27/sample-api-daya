@@ -6,7 +6,8 @@ app.use(express.json());
 // Sample in-memory data
 let employees = [
   { id: 1, name: "John" },
-  { id: 2, name: "David" }
+  { id: 2, name: "David" },
+  { id: 3, name: "dayanand" }
 ];
 
 // Home Route
