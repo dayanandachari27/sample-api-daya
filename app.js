@@ -7,7 +7,8 @@ app.use(express.json());
 let employees = [
   { id: 1, name: "John" },
   { id: 2, name: "David" },
-  { id: 3, name: "dayanand" }
+  { id: 3, name: "dayanand" },
+  { id: 4, name: "Ravi" }
 ];
 
 // Home Route

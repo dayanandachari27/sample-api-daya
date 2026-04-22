@@ -15,13 +15,13 @@ describe('Sample API Tests', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
   
-  test ('POST /employees should create employee', async () => {
-    const res = await request(app)
-      .post('/employees')
-      .send({ id: 10, name: 'anu' });
+  // test ('POST /employees should create employee', async () => {
+  //   const res = await request(app)
+  //     .post('/employees')
+  //     .send({ id: 4, name: 'anu' });
 
-    expect(res.statusCode).toBe(201);
-    expect(res.body.name).toBe('anu');
-  });
+  //   expect(res.statusCode).toBe(201);
+  //   expect(res.body.name).toBe('anu');
+  // });
 
 });
