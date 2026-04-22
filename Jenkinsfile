@@ -133,7 +133,14 @@ pipeline {
 
         stage('Deploy to Podman') {
             steps {
-                sh '''
+                 withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) { 
+                    sh '''
                     set -e
                     REGISTRY_IMAGE=docker.io/dayanand1991/sample-api-podman-image:${IMAGE_TAG}
 
@@ -161,6 +168,7 @@ pipeline {
 
                     podman logout docker.io
                 '''
+                }
             }
         }
 
