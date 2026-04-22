@@ -112,13 +112,18 @@ pipeline {
                     )
                 ]) {
                     sh '''
+                        set -e
+
+                        REGISTRY_IMAGE=docker.io/dayanand1991/sample-api-podman-image:${IMAGE_TAG}
+
                         echo "$DOCKER_PASS" | podman login docker.io \
                         -u "$DOCKER_USER" --password-stdin
 
-                        podman tag ${IMAGE_NAME}:${IMAGE_TAG} \
-                        docker.io/dayanand1991/sample-api-podman-image:${IMAGE_TAG}
+                        podman tag ${IMAGE_NAME}:${IMAGE_TAG} $REGISTRY_IMAGE
 
-                        podman push docker.io/dayanand1991/sample-api-podman-image:${IMAGE_TAG}
+                        podman push $REGISTRY_IMAGE
+
+                        podman logout docker.io
                     '''
                 }
             }
@@ -130,20 +135,31 @@ pipeline {
             steps {
                 sh '''
                     set -e
+                    REGISTRY_IMAGE=docker.io/dayanand1991/sample-api-podman-image:${IMAGE_TAG}
+
+                    echo "$DOCKER_PASS" | podman login docker.io \
+                    -u "$DOCKER_USER" --password-stdin
+
+                    echo "Pull latest approved image..."
+                    podman pull $REGISTRY_IMAGE
+
                     echo "Removing old container if exists..."
                     podman rm -f ${CONTAINER_NAME} || true
 
-                    echo "starting new container..."
+                    echo "Starting new container..."
                     podman run -d \
-                      --name ${CONTAINER_NAME} \
-                      --label build=${BUILD_NUMBER} \
-                      --cgroup-manager=cgroupfs \
-                      -p ${HOST_PORT}:${APP_PORT} \
-                      ${IMAGE_NAME}:${IMAGE_TAG}
+                    --name ${CONTAINER_NAME} \
+                    --label build=${BUILD_NUMBER} \
+                    --cgroup-manager=cgroupfs \
+                    -p ${HOST_PORT}:${APP_PORT} \
+                    $REGISTRY_IMAGE
 
-                    sleep 3
-                    echo "Running containers:"
+                    sleep 5
+
+                    echo "Running containers after deployment..."
                     podman ps
+
+                    podman logout docker.io
                 '''
             }
         }
@@ -199,9 +215,9 @@ pipeline {
                 echo "Removing dangling Podman images..."
                 podman image prune -f || true
 
-                ##echo "Cleaning workspace..."
+                echo "Cleaning workspace..."
             '''
-            // cleanWs()
+            cleanWs()
         }
     }
 }
