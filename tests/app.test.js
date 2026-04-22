@@ -14,5 +14,14 @@ describe('Sample API Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
+  
+  test ('POST /employees should create employee', async () => {
+    const res = await request(app)
+      .post('/employees')
+      .send({ id: 10, name: 'anu' });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body.name).toBe('anu');
+  });
 
 });
